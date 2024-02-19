@@ -1,7 +1,7 @@
 {
     "version":            "1",
     "project_name":       "Smart_Garden",
-    "project_version":    "2b81f8f",
+    "project_version":    "71a9623-dirty",
     "project_path":       "C:/Users/hieun/Downloads/Hieu/HOCKY232/KTLL/TKLLproject/hardware/Smart_Garden",
     "idf_path":           "C:/Users/hieun/esp/v5.1.2/esp-idf",
     "build_dir":          "C:/Users/hieun/Downloads/Hieu/HOCKY232/KTLL/TKLLproject/hardware/Smart_Garden/build",
