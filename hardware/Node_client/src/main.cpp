@@ -13,18 +13,77 @@
 #include "dht11Sens.h"
 #include "pump.h"
 #include "esp_nowClient.h"
+#include "button.h"
 
 void initSystem(void);
 
+unsigned long last_read_time = 0;
+unsigned long pump_on_interval = 3;
+
+unsigned long mode_timer_interval = 6 * 60 * 60;
+
+enum mode
+{
+  mode_auto,
+  mode_timer,
+  mode_manual
+};
+mode current_mode = mode_manual;
+
+bool activate_limit = 30;
+
 void setup()
 {
+  Serial.begin(9600);
+  initSystem();
   delay(1000);
 
-  initSystem();
+  pumpAuto(moisturePercent(), activate_limit);
 }
 
 void loop()
 {
+  unsigned long current_time = millis();
+
+  if (isPumpOn())
+  {
+    if (current_time - last_read_time >= pump_on_interval * 1000)
+    {
+      last_read_time = current_time;
+      pumpTurnOff();
+    }
+    else if (current_time < last_read_time)
+    {
+      last_read_time = current_time;
+    }
+  }
+
+  if (isButtonDown())
+  {
+    pumpTurnOn();
+    last_read_time = current_time;
+  }
+
+  switch (current_mode)
+  {
+  case mode_auto:
+  {
+    pumpAuto(moisturePercent(), activate_limit);
+    break;
+  }
+  case mode_timer:
+  {
+    if (current_time - last_read_time >= mode_timer_interval * 1000)
+    {
+      pumpTurnOn();
+      last_read_time = current_time;
+    }
+    break;
+  }
+  default:
+    break;
+  }
+
   if (isPacketReceived())
   {
     if (getRequestData())
@@ -34,10 +93,7 @@ void loop()
     else if (getPumpOrder())
     {
       pumpTurnOn();
-    }
-    else
-    {
-      pumpTurnOff();
+      last_read_time = current_time;
     }
   }
 }
@@ -50,6 +106,5 @@ void initSystem()
   initDHT11Sens();
   initPump();
   initEsp_now();
-
-  Serial.begin(9600);
+  initButton();
 }

@@ -9,79 +9,77 @@
 
 #include "lcd.h"
 #include "esp_nowServer.h"
-#include "rtc.h"
 #include "button.h"
+#include "numpad.h"
+#include "mqtt.h"
 
 void initSystem(void);
-void debug(void);
 
-unsigned long read_interval = 6 * 60 * 60 * 1000;
+enum mode
+{
+  mode_running,
+  mode_modify_pump
+};
+mode current_mode = mode_running;
+
+unsigned long read_interval = 6 * 60 * 60;
 unsigned long last_read_time = 0;
-unsigned int pump_interval = 3 * 1000;
-unsigned long last_pump_on_time = 0;
-bool is_pump_on = false;
+
+char key = 0;
 
 void setup()
 {
-  delay(1000);
-
+  Serial.begin(9600);
   initSystem();
-
+  delay(1000);
   esp_nowRequestData();
 }
 
 void loop()
 {
-  unsigned long current_time = millis();
+  key = numpadGetKey();
 
-  if (current_time - last_read_time >= read_interval)
+  switch (current_mode)
   {
-    last_read_time = current_time;
-    esp_nowRequestData();
-  }
-  else if (current_time < last_read_time)
+  case mode_running:
   {
-    last_read_time = current_time;
-    esp_nowRequestData();
-  }
+    unsigned long current_time = millis();
 
-  if (is_pump_on == true)
-  {
-    if (current_time - last_pump_on_time >= pump_interval)
+    // request data
+    if (current_time - last_read_time >= read_interval * 1000)
     {
-      last_pump_on_time = current_time;
-      esp_nowTurnOffPump();
-      is_pump_on = false;
-    }
-    else if (current_time < last_pump_on_time)
-    {
-      last_pump_on_time = current_time;
-    }
-  }
-
-  if (current_time % 500 == 0)
-  {
-    if (isButtonDown())
-    {
+      last_read_time = current_time;
       esp_nowRequestData();
     }
-  }
+    else if (current_time < last_read_time)
+    {
+      last_read_time = current_time;
+      esp_nowRequestData();
+    }
 
-  if (isPacketReceived())
-  {
-    debug();
-
-    clearLCD();
-    lcdDisplay(0, 0, "Moisture:", getMoisturePercentage(), "%");
-    lcdDisplay(0, 1, "Temp:", getTemperature(), "C");
-    lcdDisplay(8, 1, "Humid:", getHumidity(), "%");
-
-    if (getMoisturePercentage() < 30)
+    if (isButtonDown())
     {
       esp_nowTurnOnPump();
-      is_pump_on = true;
-      last_pump_on_time = current_time;
+      esp_nowRequestData();
     }
+
+    if (isPacketReceived())
+    {
+      clearLCD();
+      lcdDisplay(0, 0, "Moisture:", getMoisturePercentage(), "%");
+      lcdDisplay(0, 1, "Temp:", getTemperature(), "C");
+      lcdDisplay(8, 1, "Humid:", getHumidity(), "%");
+    }
+    if (!isPacketSent())
+    {
+      clearLCD();
+      lcdDisplay(1, 0, "Not Connected   ", 0, "%");
+    }
+    break;
+  }
+
+  default:
+    break;
   }
 }
 
@@ -91,20 +89,5 @@ void initSystem()
   clearLCD();
   initEsp_now();
   initButton();
-
-  Serial.begin(9600);
-}
-
-void debug()
-{
-  Serial.print("moisture percent: ");
-  Serial.print(getMoisturePercentage());
-  Serial.print(" night: ");
-  Serial.print(getNightStatus());
-  Serial.print(" temp: ");
-  Serial.print(getTemperature());
-  Serial.print(" humidity: ");
-  Serial.print(getHumidity());
-  Serial.print(" dry: ");
-  Serial.println(getDryStatus());
+  initNumpad();
 }

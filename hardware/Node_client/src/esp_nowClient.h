@@ -10,7 +10,7 @@
 
 void initEsp_now(void);
 void esp_nowSendPacket(float temperature, float humidity, int moisture_value, int moisture_percentage, int pump_status, int dry_status, int night_status);
-uint8_t isPacketReceived(void);
+bool isPacketReceived(void);
 bool getRequestData(void);
 bool getPumpOrder(void);
 

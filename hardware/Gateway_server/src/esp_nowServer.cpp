@@ -14,7 +14,8 @@
 void initEsp_now(void);
 void onDataSent(const uint8_t *macAddr, esp_now_send_status_t status);
 void OnDataRecv(const uint8_t *mac, const uint8_t *incomingData, int len);
-uint8_t isPacketReceived(void);
+bool isPacketSent(void);
+bool isPacketReceived(void);
 void esp_nowRequestData(void);
 void esp_nowTurnOnPump(void);
 void esp_nowTurnOffPump(void);
@@ -52,6 +53,7 @@ Message_Send packet_send;
 esp_now_peer_info_t peerInfo;
 
 volatile bool is_packet_received = false;
+volatile bool is_packet_sent = false;
 
 void initEsp_now()
 {
@@ -89,6 +91,8 @@ void onDataSent(const uint8_t *macAddr, esp_now_send_status_t status)
 {
     Serial.print("Last Packet Send Status: ");
     Serial.println(status == ESP_NOW_SEND_SUCCESS ? "Delivery Success" : "Delivery Fail");
+
+    is_packet_sent = (status == ESP_NOW_SEND_SUCCESS);
 }
 
 void OnDataRecv(const uint8_t *mac, const uint8_t *incomingData, int len)
@@ -99,14 +103,19 @@ void OnDataRecv(const uint8_t *mac, const uint8_t *incomingData, int len)
     is_packet_received = true;
 }
 
-uint8_t isPacketReceived(void)
+bool isPacketSent(void)
+{
+    return is_packet_sent;
+}
+
+bool isPacketReceived(void)
 {
     if (is_packet_received)
     {
         is_packet_received = false;
-        return 1;
+        return true;
     }
-    return 0;
+    return false;
 }
 
 void esp_nowRequestData()

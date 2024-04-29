@@ -13,8 +13,8 @@
 
 void initEsp_now(void);
 void onDataSent(const uint8_t *macAddr, esp_now_send_status_t status);
-void OnDataRecv(const   uint8_t *mac, const uint8_t *incomingData, int len);
-uint8_t isPacketReceived(void);
+void OnDataRecv(const uint8_t *mac, const uint8_t *incomingData, int len);
+bool isPacketReceived(void);
 void esp_nowSendPacket(float temperature, float humidity, int moisture_value, int moisture_percentage, int pump_status, int dry_status, int night_status);
 bool getRequestData(void);
 bool getPumpOrder(void);
@@ -92,14 +92,14 @@ void OnDataRecv(const uint8_t *mac, const uint8_t *incomingData, int len)
     is_packet_received = true;
 }
 
-uint8_t isPacketReceived(void)
+bool isPacketReceived(void)
 {
     if (is_packet_received)
     {
         is_packet_received = false;
-        return 1;
+        return true;
     }
-    return 0;
+    return false;
 }
 
 void esp_nowSendPacket(float temperature, float humidity, int moisture_value, int moisture_percentage, int pump_status, int dry_status, int night_status)

@@ -9,7 +9,8 @@
 #define SRC_ESP_NOWSERVER_H
 
 void initEsp_now(void);
-uint8_t isPacketReceived(void);
+bool isPacketSent(void);
+bool isPacketReceived(void);
 void esp_nowRequestData(void);
 void esp_nowTurnOnPump(void);
 void esp_nowTurnOffPump(void);

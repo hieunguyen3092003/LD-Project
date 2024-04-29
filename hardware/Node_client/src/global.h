@@ -10,6 +10,4 @@
 
 #include <Arduino.h>
 
-void initSystem(void);
-
 #endif /* SRC_GLOBAL_H */

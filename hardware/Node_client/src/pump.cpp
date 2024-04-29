@@ -9,7 +9,7 @@
 #include "pump.h"
 
 void initPump(void);
-void pumpAuto(const int &moisture_percent, int activate_limit);
+void pumpAuto(const int &moisture_percent, const int &activate_limit);
 void pumpTurnOn(void);
 void pumpTurnOff(void);
 int isPumpOn(void);
@@ -20,7 +20,7 @@ void initPump()
     digitalWrite(Pump_Pin, LOW);
 }
 
-void pumpAuto(const int &moisture_percent, int activate_limit)
+void pumpAuto(const int &moisture_percent, const int &activate_limit)
 {
     if (moisture_percent <= activate_limit)
     {

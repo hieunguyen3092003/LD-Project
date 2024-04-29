@@ -11,7 +11,7 @@
 #define Pump_Pin GPIO_NUM_5
 
 void initPump(void);
-void pumpAuto(const int &moisture_percent, int activate_limit);
+void pumpAuto(const int &moisture_percent, const int &activate_limit);
 void pumpTurnOn(void);
 void pumpTurnOff(void);
 int isPumpOn(void);
