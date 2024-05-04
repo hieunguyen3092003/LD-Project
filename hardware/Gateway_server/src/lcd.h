@@ -11,7 +11,9 @@
 #include "global.h"
 
 void initLCD(void);
-void clearLCD(void);
+void lcdTurnOnBacklight(void);
+void lcdTurnOffBacklight(void);
+void lcdClear(void);
 void lcdDisplay(const int &x_coor, const int &y_coor, const String &msg, const int &number, const String &units);
 
 #endif /* SRC_LCD_H */

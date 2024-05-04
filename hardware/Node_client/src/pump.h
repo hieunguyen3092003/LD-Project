@@ -10,6 +10,9 @@
 
 #define Pump_Pin GPIO_NUM_5
 
+extern bool activate_limit;
+extern unsigned long pump_on_interval;
+
 void initPump(void);
 void pumpAuto(const int &moisture_percent, const int &activate_limit);
 void pumpTurnOn(void);

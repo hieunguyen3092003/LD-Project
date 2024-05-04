@@ -100,6 +100,24 @@ void OnDataRecv(const uint8_t *mac, const uint8_t *incomingData, int len)
     // Get incoming data
     memcpy(&packet_receive, incomingData, sizeof(packet_receive));
 
+    Serial.print("Data received: ");
+    Serial.println(len);
+    Serial.print("Temperature Value: ");
+    Serial.println(packet_receive.temp);
+    Serial.print("Humidity Value: ");
+    Serial.println(packet_receive.humid);
+    Serial.print("Moisture Value: ");
+    Serial.println(packet_receive.moisture_val);
+    Serial.print("Moisture Percentage: ");
+    Serial.println(packet_receive.moisture_pct);
+    Serial.print("Pump Status: ");
+    Serial.println(packet_receive.is_pump_on);
+    Serial.print("Dry Status: ");
+    Serial.println(packet_receive.is_dry);
+    Serial.print("Night Status: ");
+    Serial.println(packet_receive.is_night);
+    Serial.println();
+
     is_packet_received = true;
 }
 

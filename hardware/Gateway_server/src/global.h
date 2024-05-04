@@ -10,4 +10,6 @@
 
 #include <Arduino.h>
 
+extern unsigned long current_time;
+
 #endif /* SRC_GLOBAL_H */

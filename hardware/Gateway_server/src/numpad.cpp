@@ -13,6 +13,8 @@
 void initNumpad(void);
 char numpadGetKey(void);
 
+char key = 0;
+
 const uint8_t ROWS = 4;
 const uint8_t COLS = 4;
 char keys[ROWS][COLS] = {

@@ -10,7 +10,9 @@
 #include <LiquidCrystal_I2C.h>
 
 void initLCD(void);
-void clearLCD(void);
+void lcdTurnOnBacklight(void);
+void lcdTurnOffBacklight(void);
+void lcdClear(void);
 void lcdDisplay(const int &x_coor, const int &y_coor, const String &msg, const int &number, const String &units);
 
 LiquidCrystal_I2C lcd(0x27, 16, 2);
@@ -18,11 +20,21 @@ LiquidCrystal_I2C lcd(0x27, 16, 2);
 void initLCD()
 {
     lcd.init();
-    lcd.backlight();
+    lcdTurnOnBacklight();
     lcd.clear();
 }
 
-void clearLCD()
+void lcdTurnOnBacklight()
+{
+    lcd.backlight();
+}
+
+void lcdTurnOffBacklight()
+{
+    lcd.noBacklight();
+}
+
+void lcdClear()
 {
     lcd.clear();
 }

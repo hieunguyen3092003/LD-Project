@@ -89,6 +89,14 @@ void OnDataRecv(const uint8_t *mac, const uint8_t *incomingData, int len)
     // Get incoming data
     memcpy(&packet_receive, incomingData, sizeof(packet_receive));
 
+    Serial.print("Data received: ");
+    Serial.println(len);
+    Serial.print("Turn On Pump: ");
+    Serial.println(packet_receive.turn_on_pump);
+    Serial.print("Request Data: ");
+    Serial.println(packet_receive.request_data);
+    Serial.println();
+
     is_packet_received = true;
 }
 

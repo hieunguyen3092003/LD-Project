@@ -13,7 +13,7 @@ int moistureValue(void);
 int moisturePercent(void);
 
 const int AIR_VALUE = 4095;
-const int WATER_VALUE = 1300;
+const int WATER_VALUE = 2000;
 int moisture_value = 0;
 int moisture_percent = 0;
 

@@ -14,23 +14,12 @@
 #include "pump.h"
 #include "esp_nowClient.h"
 #include "button.h"
+#include "fsm.h"
 
 void initSystem(void);
 
 unsigned long last_read_time = 0;
-unsigned long pump_on_interval = 3;
-
 unsigned long mode_timer_interval = 6 * 60 * 60;
-
-enum mode
-{
-  mode_auto,
-  mode_timer,
-  mode_manual
-};
-mode current_mode = mode_manual;
-
-bool activate_limit = 30;
 
 void setup()
 {

@@ -14,6 +14,9 @@ void pumpTurnOn(void);
 void pumpTurnOff(void);
 int isPumpOn(void);
 
+unsigned long pump_on_interval = 3;
+bool activate_limit = 30;
+
 void initPump()
 {
     pinMode(Pump_Pin, OUTPUT);

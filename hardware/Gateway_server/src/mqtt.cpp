@@ -13,12 +13,20 @@
 #include <WiFiClient.h>
 #include "esp_nowServer.h"
 
+#define WIFI_CONNECT_TIMEOUT 10
+#define MQTT_CONNECT_TIMEOUT 10
+
 void initMQTT(void);
 void callback(char *topic, byte *payload, unsigned int length);
-void mqttloop(void);
+void mqttData(void);
+void mqttStoreData(void);
+void mqttSendData(void);
+void mqttLoop(void);
 
 WiFiClient client;
 PubSubClient mqtt_client(client);
+
+String payload; // gửi JSON
 
 // kết nối mqtt
 const char *SSID = "MIlo";
@@ -27,49 +35,63 @@ const char *SERVER_MQTT = "192.168.0.105"; // IPv4 Address
 const int PORT_MQTT = 1883;
 const char *MQTT_ID = "gateway";
 
-// khai báo biến
-uint16_t count = 0;
-String payload; // gửi JSON
-float tmp = 32;
-float humi = 69;
-uint16_t lux = 0;
-uint16_t soil = 0;
+// Các kênh gửi thông tin(publish)
+const char *dataStore_publish = "dataStore";
+const char *dataSend_publish = "dataSend";
+const char *warning_publish = "warning_publish";
+const char *pumpControl_publish = "pumpControl_publish";
 
-const char *TOPIC_SUBSCRIBE = "to-esp32";
-const char *TOPIC_PUBLISH = "form-esp32";
-const char *PUMP_SUBCRIBE = "pumpControl";
+// Các kênh đăng kí(subcribe)
+const char *pumpControl_subcribe = "pumpControl";
+const char *warning_subcribe = "warning_subcribe";
 
 void initMQTT()
 {
-    Serial.println("Connecting to Wifi....");
+    Serial.println("Connecting to WiFi...");
     WiFi.begin(SSID, PASSWORD);
-    WiFi.reconnect();
-    while (WiFi.status() != WL_CONNECTED)
+
+    unsigned long startTime = millis();
+    while (WiFi.status() != WL_CONNECTED && millis() - startTime < WIFI_CONNECT_TIMEOUT * 1000)
     {
         delay(500);
         Serial.print(".");
     }
-    Serial.println();
-    Serial.print("Connected to Wifi: ");
-    Serial.println(SSID);
-    Serial.print("IP Address: ");
-    Serial.println(WiFi.localIP());
 
-    delay(1000);
-
-    mqtt_client.setServer(SERVER_MQTT, PORT_MQTT);
-    Serial.println("Connecting to mqtt");
-    while (!mqtt_client.connect(MQTT_ID))
+    if (WiFi.status() == WL_CONNECTED)
     {
-        delay(500);
+        Serial.println("\nConnected to WiFi");
+        Serial.print("IP Address: ");
+        Serial.println(WiFi.localIP());
+
+        mqtt_client.setServer(SERVER_MQTT, PORT_MQTT);
+        Serial.println("Connecting to MQTT...");
+
+        startTime = millis();
+        while (!mqtt_client.connected() && millis() - startTime < MQTT_CONNECT_TIMEOUT * 1000)
+        {
+            if (mqtt_client.connect(MQTT_ID))
+            {
+                Serial.println("Connected to MQTT");
+                mqtt_client.subscribe(pumpControl_subcribe);
+                mqtt_client.subscribe(warning_subcribe);
+                mqtt_client.setCallback(callback);
+            }
+            else
+            {
+                Serial.print(".");
+                delay(500);
+            }
+        }
+
+        if (!mqtt_client.connected())
+        {
+            Serial.println("\nFailed to connect to MQTT");
+        }
     }
-    Serial.println("Connected to mqtt");
-
-    mqtt_client.publish(TOPIC_PUBLISH, "hello server");
-    mqtt_client.subscribe(TOPIC_SUBSCRIBE);
-    mqtt_client.subscribe(PUMP_SUBCRIBE);
-
-    mqtt_client.setCallback(callback); // return data thats this function received
+    else
+    {
+        Serial.println("\nFailed to connect to WiFi");
+    }
 }
 
 void callback(char *topic, byte *payload, unsigned int length)
@@ -86,20 +108,43 @@ void callback(char *topic, byte *payload, unsigned int length)
     Serial.println(message);
 
     // Control pump
-    if (String(topic) == PUMP_SUBCRIBE)
-    {
-        if (message == "on")
+    if (String(topic) == pumpControl_subcribe)
+    { // bật tắt máy bơm từ website
+        if (message == "true")
         {
             esp_nowTurnOnPump();
+            esp_nowRequestData();
         }
-        else if (message == "off")
+        else if (message == "false")
         {
             esp_nowTurnOffPump();
+            esp_nowRequestData();
         }
+    }
+
+    // xác nhận có thiết bị bị hư hỏng
+    if (String(topic) == warning_subcribe)
+    {
+        // Handle warnings if needed
     }
 }
 
-void mqttloop()
+void mqttData()
+{
+    payload = "{\"temperature\": " + String(getTemperature()) + ", \"humidity\": " + String(getHumidity()) + ", \"soil\": " + String(getMoisturePercentage()) + ", \"brightness_level\": " + String(getNightStatus()) + ", \"__v\": 0}";
+}
+
+void mqttStoreData()
+{
+    mqtt_client.publish(dataStore_publish, payload.c_str());
+}
+
+void mqttSendData()
+{
+    mqtt_client.publish(dataSend_publish, payload.c_str());
+}
+
+void mqttLoop()
 {
     mqtt_client.loop();
 }
