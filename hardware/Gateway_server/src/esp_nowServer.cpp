@@ -11,6 +11,8 @@
 #include <esp_now.h>
 #include <WiFi.h>
 
+#include "fsm.h"
+
 void initEsp_now(void);
 void onDataSent(const uint8_t *macAddr, esp_now_send_status_t status);
 void OnDataRecv(const uint8_t *mac, const uint8_t *incomingData, int len);
@@ -18,7 +20,7 @@ bool isPacketSent(void);
 bool isPacketReceived(void);
 void esp_nowRequestData(void);
 void esp_nowTurnOnPump(void);
-void esp_nowTurnOffPump(void);
+void esp_nowSendPumpMode(void);
 
 float getTemperature(void);
 float getHumidity(void);
@@ -47,6 +49,7 @@ typedef struct Message_Send
 {
     bool turn_on_pump;
     bool request_data;
+    int pump_mode_order;
 } Message_Send;
 Message_Send packet_send;
 
@@ -140,6 +143,7 @@ void esp_nowRequestData()
 {
     packet_send.request_data = 1;
     packet_send.turn_on_pump = 0;
+    packet_send.pump_mode_order = current_pump_mode;
 
     esp_now_send(broadcastAddress, (uint8_t *)&packet_send, sizeof(packet_send));
 }
@@ -147,13 +151,15 @@ void esp_nowTurnOnPump()
 {
     packet_send.request_data = 0;
     packet_send.turn_on_pump = 1;
+    packet_send.pump_mode_order = current_pump_mode;
 
     esp_now_send(broadcastAddress, (uint8_t *)&packet_send, sizeof(packet_send));
 }
-void esp_nowTurnOffPump()
+void esp_nowSendPumpMode()
 {
     packet_send.request_data = 0;
     packet_send.turn_on_pump = 0;
+    packet_send.pump_mode_order = current_pump_mode;
 
     esp_now_send(broadcastAddress, (uint8_t *)&packet_send, sizeof(packet_send));
 }

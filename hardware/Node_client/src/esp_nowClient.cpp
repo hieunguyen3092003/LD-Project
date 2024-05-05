@@ -14,15 +14,17 @@
 void initEsp_now(void);
 void onDataSent(const uint8_t *macAddr, esp_now_send_status_t status);
 void OnDataRecv(const uint8_t *mac, const uint8_t *incomingData, int len);
+bool isPacketSent(void);
 bool isPacketReceived(void);
 void esp_nowSendPacket(float temperature, float humidity, int moisture_value, int moisture_percentage, int pump_status, int dry_status, int night_status);
 bool getRequestData(void);
 bool getPumpOrder(void);
+int getPumpMode(void);
 
 // Responder MAC Address (Replace with your responders MAC Address)
 uint8_t broadcastAddress[] = {0xCC, 0x7B, 0x5C, 0x27, 0xAD, 0x44};
 
-typedef struct message_Send
+typedef struct Message_Send
 {
     float temp;
     float humid;
@@ -31,13 +33,14 @@ typedef struct message_Send
     int is_pump_on;
     int is_dry;
     int is_night;
-} message_Send;
-message_Send packet_send;
+} Message_Send;
+Message_Send packet_send;
 
 typedef struct Message_Receive
 {
     bool turn_on_pump;
     bool request_data;
+    int pump_mode;
 } Message_Receive;
 Message_Receive packet_receive;
 
@@ -45,6 +48,7 @@ Message_Receive packet_receive;
 esp_now_peer_info_t peerInfo;
 
 volatile bool is_packet_received = false;
+volatile bool is_packet_sent = false;
 
 void initEsp_now()
 {
@@ -82,6 +86,8 @@ void onDataSent(const uint8_t *macAddr, esp_now_send_status_t status)
 {
     Serial.print("Last Packet Send Status: ");
     Serial.println(status == ESP_NOW_SEND_SUCCESS ? "Delivery Success" : "Delivery Fail");
+
+    is_packet_sent = (status == ESP_NOW_SEND_SUCCESS);
 }
 
 void OnDataRecv(const uint8_t *mac, const uint8_t *incomingData, int len)
@@ -95,9 +101,16 @@ void OnDataRecv(const uint8_t *mac, const uint8_t *incomingData, int len)
     Serial.println(packet_receive.turn_on_pump);
     Serial.print("Request Data: ");
     Serial.println(packet_receive.request_data);
+    Serial.print("Pump Mode: ");
+    Serial.println(packet_receive.pump_mode);
     Serial.println();
 
     is_packet_received = true;
+}
+
+bool isPacketSent()
+{
+    return is_packet_sent;
 }
 
 bool isPacketReceived(void)
@@ -130,4 +143,8 @@ bool getRequestData()
 bool getPumpOrder()
 {
     return packet_receive.turn_on_pump;
+}
+int getPumpMode()
+{
+    return packet_receive.pump_mode;
 }

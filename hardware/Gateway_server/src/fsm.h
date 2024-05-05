@@ -8,14 +8,26 @@
 #ifndef SRC_FSM_H
 #define SRC_FSM_H
 
-enum mode
+enum Mode
 {
     mode_init,
+    mode_modify_password,
+    mode_modify_pump,
     mode_security,
-    mode_running,
-    mode_modify_pump
+    mode_running
 };
-extern mode current_mode;
+extern Mode current_mode;
+
+enum Pump_Mode
+{
+    mode_auto,
+    mode_timer,
+    mode_manual
+};
+extern Pump_Mode current_pump_mode;
+
+extern String Password;
+extern String passwordInput;
 
 void fsmManager(void);
 

@@ -8,12 +8,13 @@
 #ifndef SRC_FSM_H
 #define SRC_FSM_H
 
-enum mode
+enum Mode
 {
+    mode_init,
     mode_auto,
     mode_timer,
     mode_manual
 };
-extern mode current_mode;
+extern Mode current_mode;
 
 #endif /* SRC_FSM_H */

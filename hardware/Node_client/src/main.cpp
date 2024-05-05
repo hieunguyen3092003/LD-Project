@@ -16,61 +16,85 @@
 #include "button.h"
 #include "fsm.h"
 
+#define READ_INTERVAL 3 * 60 * 60               // 3 hours
+#define INACTIVE_READ_INTERVAL 3 * 24 * 60 * 60 // 3 days
+#define PUMP_ON_INTERVAL 5                      // 5 seconds
+#define ACTIVATE_LIMIT 40
+
 void initSystem(void);
 
-unsigned long last_read_time = 0;
-unsigned long mode_timer_interval = 6 * 60 * 60;
+unsigned long current_time = 0;
+unsigned long last_pump_on_time = 0;
 
 void setup()
 {
   Serial.begin(9600);
   initSystem();
   delay(1000);
-
-  pumpAuto(moisturePercent(), activate_limit);
 }
 
 void loop()
 {
-  unsigned long current_time = millis();
-
-  if (isPumpOn())
-  {
-    if (current_time - last_read_time >= pump_on_interval * 1000)
-    {
-      last_read_time = current_time;
-      pumpTurnOff();
-    }
-    else if (current_time < last_read_time)
-    {
-      last_read_time = current_time;
-    }
-  }
+  current_time = millis();
 
   if (isButtonDown())
   {
     pumpTurnOn();
-    last_read_time = current_time;
+    last_pump_on_time = current_time;
+  }
+  if (isPumpOn())
+  {
+    if (current_time - last_pump_on_time >= PUMP_ON_INTERVAL * 1000 || current_time < last_pump_on_time)
+    {
+      pumpTurnOff();
+    }
   }
 
   switch (current_mode)
   {
+  case mode_init:
+  {
+    current_mode = mode_auto;
+    break;
+  }
   case mode_auto:
   {
-    pumpAuto(moisturePercent(), activate_limit);
+    if (moisturePercent() == 0)
+    {
+      current_mode = mode_manual;
+    }
+    else
+    {
+      if (!isPumpOn())
+      {
+        if (moisturePercent() <= ACTIVATE_LIMIT)
+        {
+          pumpTurnOn();
+          last_pump_on_time = current_time;
+        }
+      }
+    }
+
     break;
   }
   case mode_timer:
   {
-    if (current_time - last_read_time >= mode_timer_interval * 1000)
+    if (current_time - last_pump_on_time >= READ_INTERVAL * 1000 || current_time < last_pump_on_time)
     {
       pumpTurnOn();
-      last_read_time = current_time;
+      last_pump_on_time = current_time;
     }
     break;
   }
-  default:
+  case mode_manual:
+  {
+    if (isButtonDown())
+    {
+      pumpTurnOn();
+      last_pump_on_time = current_time;
+    }
     break;
+  }
   }
 
   if (isPacketReceived())
@@ -82,7 +106,28 @@ void loop()
     else if (getPumpOrder())
     {
       pumpTurnOn();
-      last_read_time = current_time;
+      last_pump_on_time = current_time;
+    }
+    else
+    {
+      switch (getPumpMode())
+      {
+      case 0:
+      {
+        current_mode = mode_auto;
+        break;
+      }
+      case 1:
+      {
+        current_mode = mode_timer;
+        break;
+      }
+      case 2:
+      {
+        current_mode = mode_manual;
+        break;
+      }
+      }
     }
   }
 }

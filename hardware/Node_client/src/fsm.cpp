@@ -7,11 +7,6 @@
 
 #include "global.h"
 #include "fsm.h"
+#include "esp_nowClient.h"
 
-void fsmManager(void);
-
-mode current_mode = mode_manual;
-
-void fsmManager()
-{
-}
+Mode current_mode = mode_init;

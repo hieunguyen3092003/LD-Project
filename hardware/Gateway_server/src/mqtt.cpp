@@ -115,11 +115,6 @@ void callback(char *topic, byte *payload, unsigned int length)
             esp_nowTurnOnPump();
             esp_nowRequestData();
         }
-        else if (message == "false")
-        {
-            esp_nowTurnOffPump();
-            esp_nowRequestData();
-        }
     }
 
     // xác nhận có thiết bị bị hư hỏng

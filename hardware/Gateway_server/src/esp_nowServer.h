@@ -13,7 +13,7 @@ bool isPacketSent(void);
 bool isPacketReceived(void);
 void esp_nowRequestData(void);
 void esp_nowTurnOnPump(void);
-void esp_nowTurnOffPump(void);
+void esp_nowSendPumpMode(void);
 
 float getTemperature(void);
 float getHumidity(void);
