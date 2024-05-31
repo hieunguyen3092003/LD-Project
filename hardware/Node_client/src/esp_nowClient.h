@@ -1,19 +1,33 @@
-/*
- * esp_nowClient.h
- *
- *  Created on: feb 5, 2023
- *      Author: hieun
- */
+#include "cfg.h"
 
-#ifndef SRC_ESP_NOWCLIENT_H
-#define SRC_ESP_NOWCLIENT_H
+#ifdef ESP_NOWCLIENT
 
 void initEsp_now(void);
-void esp_nowSendPacket(float temperature, float humidity, int moisture_value, int moisture_percentage, int pump_status, int dry_status, int night_status);
-bool isPacketSent(void);
 bool isPacketReceived(void);
-bool getRequestData(void);
-bool getPumpOrder(void);
-int getPumpMode(void);
+void esp_nowSync(void);
 
-#endif /* SRC_ESP_NOWCLIENT_H */
+typedef struct Message_Receive
+{
+    bool is_button_down;
+
+    int pump_mode;
+    int pump_limit;
+    int pump_interval;
+} Message_Receive;
+extern Message_Receive packet_receive;
+
+typedef struct Message_Send
+{
+    int moisture_pct;
+    float temp;
+    float humid;
+    bool is_dry;
+    bool is_night;
+
+    bool is_pump_on;
+
+    bool warning;
+} Message_Send;
+extern Message_Send packet_send;
+
+#endif /* ESP_NOWCLIENT */

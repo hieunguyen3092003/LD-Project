@@ -1,16 +1,9 @@
-/*
- * lightSens.h
- *
- *  Created on: feb 5, 2023
- *      Author: hieun
- */
+#include "cfg.h"
 
-#ifndef SRC_LIGHTSENS_H
-#define SRC_LIGHTSENS_H
+#ifdef LIGHTSENS
 
-#define Light_Sensor_Pin GPIO_NUM_34
-
+#define LIGHT_SENSOR_PIN GPIO_NUM_34
 void initLightSens(void);
-int isNight(void);
+bool isNight(void);
 
-#endif /* SRC_LIGHTSENS_H */
+#endif /* LIGHTSENS */

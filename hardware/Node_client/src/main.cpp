@@ -1,53 +1,65 @@
 /*
- * main.cpp
- *
- *  Created on: feb 5, 2023
- *      Author: hieun
- */
+                /\/\
+               /'^.^)
+        .-^^^-/  /
+     _/         /7
+    <__.|_|--|_|
+*/
 
 #include "global.h"
 
-#include "moistureSens.h"
-#include "lightSens.h"
-#include "rainSens.h"
-#include "dht11Sens.h"
-#include "pump.h"
-#include "esp_nowClient.h"
 #include "button.h"
-#include "fsm.h"
+#include "dht11Sens.h"
+#include "esp_nowClient.h"
+#include "lightSens.h"
+#include "moistureSens.h"
+#include "pump.h"
+#include "rainSens.h"
 
-#define READ_INTERVAL 3 * 60 * 60               // 3 hours
-#define INACTIVE_READ_INTERVAL 3 * 24 * 60 * 60 // 3 days
-#define PUMP_ON_INTERVAL 5                      // 5 seconds
-#define ACTIVATE_LIMIT 40
+#define TIMER_PUMP_INTERVAL 6 * 60 * 60 // read data every 6 hours
+#define SEND_INTERVAL 3 * 60 * 60       // send data every 3 hours
 
 void initSystem(void);
 
+// global variables
 unsigned long current_time = 0;
-unsigned long last_pump_on_time = 0;
+unsigned long last_send_time = 0;
+
+Message_Send packet_send = {moisturePercent(), dhtTempValue(), dhtHumidValue(), isNight(), isPumpOn(), false};
+Message_Receive packet_receive{false, 1, 50, 5};
+
+Mode current_mode = mode_init;
 
 void setup()
 {
   Serial.begin(9600);
   initSystem();
+
   delay(1000);
 }
 
 void loop()
 {
   current_time = millis();
+  is_button_down = isButtonDown() || packet_receive.is_button_down;
 
-  if (isButtonDown())
+  if (packet_receive.is_button_down) // reset button variable send through esp_now
   {
-    pumpTurnOn();
-    last_pump_on_time = current_time;
+    packet_receive.is_button_down = false;
   }
-  if (isPumpOn())
+
+  if (isPacketReceived())
   {
-    if (current_time - last_pump_on_time >= PUMP_ON_INTERVAL * 1000 || current_time < last_pump_on_time)
-    {
-      pumpTurnOff();
-    }
+    current_mode = static_cast<Mode>(packet_receive.pump_mode);
+    pump_on_interval = packet_receive.pump_interval;
+    pump_on_limit = packet_receive.pump_limit;
+
+    esp_nowSync();
+  }
+
+  if (current_time - last_send_time >= SEND_INTERVAL * 1000)
+  {
+    esp_nowSync();
   }
 
   switch (current_mode)
@@ -55,80 +67,68 @@ void loop()
   case mode_init:
   {
     current_mode = mode_auto;
+
     break;
   }
   case mode_auto:
   {
-    if (moisturePercent() == 0)
+    if (moisturePercent() <= pump_on_limit)
     {
-      current_mode = mode_manual;
+      pumpTurnOn();
     }
     else
     {
-      if (!isPumpOn())
-      {
-        if (moisturePercent() <= ACTIVATE_LIMIT)
-        {
-          pumpTurnOn();
-          last_pump_on_time = current_time;
-        }
-      }
+      pumpTurnOff();
     }
 
     break;
   }
   case mode_timer:
   {
-    if (current_time - last_pump_on_time >= READ_INTERVAL * 1000 || current_time < last_pump_on_time)
+    if (is_button_down)
     {
       pumpTurnOn();
-      last_pump_on_time = current_time;
     }
+
+    if (!packet_send.warning)
+    {
+      if (isDry() && !isNight() && (moisturePercent() < pump_on_limit))
+      {
+        if (current_time - last_pump_on_time >= TIMER_PUMP_INTERVAL * 1000 || current_time < last_pump_on_time)
+        {
+          pumpTurnOn();
+        }
+      }
+    }
+    else
+    {
+      if (current_time - last_pump_on_time >= TIMER_PUMP_INTERVAL * 1000 || current_time < last_pump_on_time)
+      {
+        pumpTurnOn();
+      }
+    }
+
+    pumpTimerOff(pump_on_interval);
+
     break;
   }
   case mode_manual:
   {
-    if (isButtonDown())
+    if (is_button_down)
     {
-      pumpTurnOn();
-      last_pump_on_time = current_time;
+      if (isPumpOn())
+      {
+        pumpTurnOff();
+      }
+      else
+      {
+        pumpTurnOn();
+      }
     }
+
+    pumpTimerOff(pump_on_interval * 10);
     break;
   }
-  }
-
-  if (isPacketReceived())
-  {
-    if (getRequestData())
-    {
-      esp_nowSendPacket(dhtTempValue(), dhtHumidValue(), moistureValue(), moisturePercent(), isPumpOn(), isDry(), isNight());
-    }
-    else if (getPumpOrder())
-    {
-      pumpTurnOn();
-      last_pump_on_time = current_time;
-    }
-    else
-    {
-      switch (getPumpMode())
-      {
-      case 0:
-      {
-        current_mode = mode_auto;
-        break;
-      }
-      case 1:
-      {
-        current_mode = mode_timer;
-        break;
-      }
-      case 2:
-      {
-        current_mode = mode_manual;
-        break;
-      }
-      }
-    }
   }
 }
 
@@ -141,4 +141,5 @@ void initSystem()
   initPump();
   initEsp_now();
   initButton();
+  return;
 }

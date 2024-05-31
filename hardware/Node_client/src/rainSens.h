@@ -1,16 +1,9 @@
-/*
- * rainSens.h
- *
- *  Created on: feb 5, 2023
- *      Author: hieun
- */
+#include "cfg.h"
 
-#ifndef SRC_RAINSENS_H
-#define SRC_RAINSENS_H
+#ifdef RAINSENS
 
-#define Rain_Sensor_Pin GPIO_NUM_32
-
+#define RAIN_SENSOR_PIN GPIO_NUM_32
 void initRainSens(void);
-int isDry(void);
+bool isDry(void);
 
-#endif /* SRC_RAINSENS_H */
+#endif /* RAINSENS */

@@ -1,18 +1,15 @@
-/*
- * pump.h
- *
- *  Created on: feb 5, 2023
- *      Author: hieun
- */
+#include "cfg.h"
 
-#ifndef SRC_PUMP_H
-#define SRC_PUMP_H
+#ifdef PUMP
 
-#define Pump_Pin GPIO_NUM_5
-
+#define PUMP_PIN GPIO_NUM_5
+extern int pump_on_limit;
+extern int pump_on_interval;
+extern unsigned long last_pump_on_time;
 void initPump(void);
 void pumpTurnOn(void);
 void pumpTurnOff(void);
-int isPumpOn(void);
+bool isPumpOn(void);
+void pumpTimerOff(const int pump_on_interval);
 
-#endif /* SRC_PUMP_H */
+#endif /* PUMP */

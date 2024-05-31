@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LD-Project</title>
+
+    <style type="text/css">
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        body {
+            background-image: url('https://wallpapercave.com/wp/wp4694723.jpg');
+            /* Replace with your image URL */
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        .data-head {
+            text-align: center;
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: rgba(2, 136, 209, 0.8);
+            color: #fff;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            width: 60%;
+            animation: fadeInUp 1s ease-in-out;
+            transition: all 0.3s ease;
+        }
+
+        .data-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 40px;
+            margin: 50px auto;
+            padding: 20px;
+            width: 80%;
+            background-color: rgba(255, 255, 255, 0.8);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            animation: fadeInUp 1.5s ease-in-out;
+        }
+
+        .data-item {
+            text-align: center;
+            background-color: rgba(227, 242, 253, 0.8);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            width: 200px;
+            animation: fadeInUp 2s ease-in-out;
+            transition: all 0.3s ease;
+        }
+
+        .data-item:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .data-item h2 {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #0288d1;
+        }
+
+        .data-item p {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #0288d1;
+        }
+
+        .data-item .large-text {
+            font-size: 3rem;
+        }
+
+        .toggle-button {
+            margin: 20px;
+            padding: 10px 20px;
+            background-color: #0288d1;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.3s ease;
+        }
+
+        .toggle-button:hover {
+            background-color: #026fa1;
+        }
+
+        @media (max-width: 1024px) {
+            .data-head {
+                width: 80%;
+                font-size: 2rem;
+            }
+
+            .data-container {
+                width: 90%;
+                gap: 30px;
+            }
+
+            .data-item {
+                width: 180px;
+            }
+
+            .data-item h2,
+            .data-item p {
+                font-size: 1.2rem;
+            }
+
+            .data-item .large-text {
+                font-size: 2.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .data-head {
+                width: 90%;
+                font-size: 1.75rem;
+            }
+
+            .data-container {
+                width: 95%;
+                gap: 20px;
+            }
+
+            .data-item {
+                width: 160px;
+            }
+
+            .data-item h2,
+            .data-item p {
+                font-size: 1rem;
+            }
+
+            .data-item .large-text {
+                font-size: 2rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .data-head {
+                width: 100%;
+                font-size: 1.5rem;
+                margin: 30px auto;
+            }
+
+            .data-container {
+                width: 100%;
+                gap: 10px;
+                margin: 30px auto;
+            }
+
+            .data-item {
+                width: 140px;
+                padding: 15px;
+            }
+
+            .data-item h2,
+            .data-item p {
+                font-size: 0.9rem;
+            }
+
+            .data-item .large-text {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="data-head">Smart Garden</div>
+
+    <div class="data-container">
+        <div class="data-item">
+            <h2>Temperature</h2>
+            <p class="large-text" id="temperature">22 &#8451;</p>
+        </div>
+        <div class="data-item">
+            <h2>Humidity</h2>
+            <p class="large-text" id="humidity">10%</p>
+        </div>
+        <div class="data-item">
+            <h2>Soil Moisture</h2>
+            <p class="large-text" id="moisture">15%</p>
+        </div>
+        <div class="data-item">
+            <h2>Pump Status</h2>
+            <p id="pump_status">Off</p>
+        </div>
+        <div class="data-item">
+            <h2>Pump Interval</h2>
+            <p id="pump_interval">0s</p>
+        </div>
+        <div class="data-item">
+            <h2>Pump Limit</h2>
+            <p id="pump_limit">0%</p>
+        </div>
+        <div class="data-item">
+            <h2>Pump Mode</h2>
+            <p id="pump_mode">Manual</p>
+        </div>
+        <div class="data-item">
+            <h2>Weather</h2>
+            <p id="is_dry">No</p>
+        </div>
+        <div class="data-item">
+            <h2>Time</h2>
+            <p id="is_night">No</p>
+        </div>
+    </div>
+
+    <button class="toggle-button" onclick="toggleButton()">Toggle Button</button>
+
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-database.js"></script>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAzR7TWnD9Qed-r_65ofVwokfsYCZyltMk",
+            authDomain: "ld-project-8f0cd.firebaseapp.com",
+            databaseURL: "https://ld-project-8f0cd-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "ld-project-8f0cd",
+            storageBucket: "ld-project-8f0cd.appspot.com",
+            messagingSenderId: "12515182575",
+            appId: "1:12515182575:web:b324377f89d4a1c1b4981a"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+
+        var database = firebase.database();
+        var tempRef = database.ref('Sensor/temp');
+        var humidRef = database.ref('Sensor/humid');
+        var moistureRef = database.ref('Sensor/moisture_pct');
+        var nightStatusRef = database.ref('Sensor/is_night');
+        var dryStatusRef = database.ref('Sensor/is_dry');
+        var pumpStatusRef = database.ref('Pump/is_pump_on');
+        var pumpIntervalRef = database.ref('Pump/pump_interval');
+        var pumpLimitRef = database.ref('Pump/pump_limit');
+        var pumpModeRef = database.ref('Pump/pump_mode');
+        var buttonRef = database.ref('Button');
+
+
+        tempRef.on('value', function (snapshot) {
+            var temp = snapshot.val();
+            document.getElementById('temperature').innerHTML = temp + " &#8451;";
+        });
+
+        humidRef.on('value', function (snapshot) {
+            var humidity = snapshot.val();
+            document.getElementById('humidity').innerHTML = humidity + "%";
+        });
+
+        moistureRef.on('value', function (snapshot) {
+            var moisture = snapshot.val();
+            document.getElementById('moisture').innerHTML = moisture + "%";
+        });
+
+        pumpStatusRef.on('value', function (snapshot) {
+            var isPumpOn = snapshot.val();
+            document.getElementById('pump_status').innerHTML = isPumpOn ? "On" : "Off";
+        });
+
+        pumpIntervalRef.on('value', function (snapshot) {
+            var pumpInterval = snapshot.val();
+            document.getElementById('pump_interval').innerHTML = pumpInterval + "s";
+        });
+
+        pumpLimitRef.on('value', function (snapshot) {
+            var pumpLimit = snapshot.val();
+            document.getElementById('pump_limit').innerHTML = pumpLimit + "%";
+        });
+
+        pumpModeRef.on('value', function (snapshot) {
+            var pumpMode = snapshot.val();
+            document.getElementById('pump_mode').innerHTML = pumpMode === 1 ? "Auto" : pumpMode === 2 ? "Timer" : "Manual";
+        });
+
+        nightStatusRef.on('value', function (snapshot) {
+            var isNight = snapshot.val();
+            document.getElementById('is_night').innerHTML = isNight ? "Night" : "Day";
+        });
+
+        dryStatusRef.on('value', function (snapshot) {
+            var isDry = snapshot.val();
+            document.getElementById('is_dry').innerHTML = isDry ? "Sunny" : "Rainy";
+        });
+
+        function togglePump() {
+            buttonRef.once('value').then((snapshot) => {
+                const currentButtonState = snapshot.val() || false; // Mặc định là false nếu chưa có giá trị
+                const newButtonState = !currentButtonState;
+                set(buttonRef, newButtonState);
+                // updatePumpStatus(newButtonState); // Update UI accordingly (optional)
+            }).catch((error) => {
+                console.error("Lỗi khi chuyển đổi trạng thái nút:", error);
+            });
+        }
+
+        pumpSwitch.addEventListener('change', togglePump); // Gắn sự kiện "change" của nút
+
+    </script>
+
+</body>
+
+</html>

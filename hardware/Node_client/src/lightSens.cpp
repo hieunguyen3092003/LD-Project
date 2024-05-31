@@ -1,22 +1,19 @@
-/*
- * lightSens.cpp
- *
- *  Created on: feb 5, 2023
- *      Author: hieun
- */
-
 #include "global.h"
 #include "lightSens.h"
 
+#ifdef LIGHTSENS
+
 void initLightSens(void);
-int isNight(void);
+bool isNight(void);
 
 void initLightSens()
 {
-    pinMode(Light_Sensor_Pin, INPUT_PULLDOWN);
+    pinMode(LIGHT_SENSOR_PIN, INPUT_PULLDOWN);
 }
 
-int isNight()
+bool isNight()
 {
-    return digitalRead(Light_Sensor_Pin);
+    return (digitalRead(LIGHT_SENSOR_PIN) == HIGH);
 }
+
+#endif /* LIGHTSENS */

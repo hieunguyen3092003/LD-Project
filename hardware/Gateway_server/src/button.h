@@ -1,16 +1,9 @@
-/*
- * button.cpp
- *
- *  Created on: feb 5, 2023
- *      Author: hieun
- */
+#include "cfg.h"
 
-#ifndef SRC_BUTTON_H
-#define SRC_BUTTON_H
+#ifdef BUTTON
 
-#define Button_Pin GPIO_NUM_23
-
+#define BUTTON_PIN GPIO_NUM_23
 void initButton(void);
 bool isButtonDown(void);
 
-#endif /* SRC_BUTTON_H */
+#endif /* BUTTON */

@@ -8,28 +8,67 @@
 #include "global.h"
 #include "pump.h"
 
+#ifdef PUMP
+
+#include "moistureSens.h"
+#include "lightSens.h"
+#include "rainSens.h"
+#include "dht11Sens.h"
+#include "esp_nowClient.h"
+
 void initPump(void);
 void pumpTurnOn(void);
 void pumpTurnOff(void);
-int isPumpOn(void);
+bool isPumpOn(void);
+void pumpTimerOff(const int pump_on_interval);
+
+unsigned long last_pump_on_time = 0;
+int pump_on_limit = 50;
+int pump_on_interval = 5;
 
 void initPump()
 {
-    pinMode(Pump_Pin, OUTPUT);
-    digitalWrite(Pump_Pin, LOW);
+    pinMode(PUMP_PIN, OUTPUT);
+    digitalWrite(PUMP_PIN, HIGH);
 }
 
 void pumpTurnOn()
 {
-    digitalWrite(Pump_Pin, HIGH);
+    if (!isPumpOn())
+    {
+        digitalWrite(PUMP_PIN, LOW);
+        
+        last_pump_on_time = current_time;
+
+        esp_nowSync();
+    }
 }
 
 void pumpTurnOff()
 {
-    digitalWrite(Pump_Pin, LOW);
+    if (isPumpOn())
+    {
+        digitalWrite(PUMP_PIN, HIGH);
+
+        esp_nowSync();
+    }
 }
 
-int isPumpOn()
+bool isPumpOn()
 {
-    return digitalRead(Pump_Pin);
+    return (digitalRead(PUMP_PIN) == LOW);
 }
+
+void pumpTimerOff(const int pump_on_interval)
+{
+    if (isPumpOn())
+    {
+        if (current_time - last_pump_on_time >= pump_on_interval * 1000 || current_time < last_pump_on_time)
+        {
+            pumpTurnOff();
+        }
+    }
+    return;
+}
+
+#endif /* PUMP */

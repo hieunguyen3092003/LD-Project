@@ -1,22 +1,19 @@
-/*
- * rainSens.cpp
- *
- *  Created on: feb 5, 2023
- *      Author: hieun
- */
-
 #include "global.h"
 #include "rainSens.h"
 
+#ifdef RAINSENS
+
 void initRainSens(void);
-int isDry(void);
+bool isDry(void);
 
 void initRainSens()
 {
-    pinMode(Rain_Sensor_Pin, INPUT_PULLDOWN);
+    pinMode(RAIN_SENSOR_PIN, INPUT_PULLDOWN);
 }
 
-int isDry()
+bool isDry()
 {
-    return digitalRead(Rain_Sensor_Pin);
+    return (digitalRead(RAIN_SENSOR_PIN) == HIGH);
 }
+
+#endif /* RAINSENS */

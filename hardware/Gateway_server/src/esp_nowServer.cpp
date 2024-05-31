@@ -1,62 +1,25 @@
-/*
- * esp_nowServer.cpp
- *
- *  Created on: feb 5, 2023
- *      Author: hieun
- */
-
 #include "global.h"
 #include "esp_nowServer.h"
 
+#ifdef ESP_NOWSERVER
+
 #include <esp_now.h>
 #include <WiFi.h>
-
-#include "fsm.h"
+#include "espFirebase.h"
 
 void initEsp_now(void);
 void onDataSent(const uint8_t *macAddr, esp_now_send_status_t status);
 void OnDataRecv(const uint8_t *mac, const uint8_t *incomingData, int len);
-bool isPacketSent(void);
+bool isPacketCannotSent(void);
 bool isPacketReceived(void);
-void esp_nowRequestData(void);
-void esp_nowTurnOnPump(void);
-void esp_nowSendPumpMode(void);
-
-float getTemperature(void);
-float getHumidity(void);
-int getMoistureValue(void);
-int getMoisturePercentage(void);
-int getPumpStatus(void);
-int getDryStatus(void);
-int getNightStatus(void);
+void esp_nowSync(void);
 
 uint8_t broadcastAddress[] = {0xE4, 0x65, 0xB8, 0x1C, 0xF5, 0x54};
-
-// Define data structure
-typedef struct Message_Receive
-{
-    float temp;
-    float humid;
-    int moisture_val;
-    int moisture_pct;
-    int is_pump_on;
-    int is_dry;
-    int is_night;
-} Message_Receive;
-Message_Receive packet_receive;
-
-typedef struct Message_Send
-{
-    bool turn_on_pump;
-    bool request_data;
-    int pump_mode_order;
-} Message_Send;
-Message_Send packet_send;
 
 esp_now_peer_info_t peerInfo;
 
 volatile bool is_packet_received = false;
-volatile bool is_packet_sent = false;
+volatile bool cannot_sent = false;
 
 void initEsp_now()
 {
@@ -92,10 +55,26 @@ void initEsp_now()
 // Callback function
 void onDataSent(const uint8_t *macAddr, esp_now_send_status_t status)
 {
-    Serial.print("Last Packet Send Status: ");
-    Serial.println(status == ESP_NOW_SEND_SUCCESS ? "Delivery Success" : "Delivery Fail");
+    cannot_sent = !(status == ESP_NOW_SEND_SUCCESS);
 
-    is_packet_sent = (status == ESP_NOW_SEND_SUCCESS);
+    Serial.print("Last Packet Send Status: ");
+    if (status == ESP_NOW_SEND_SUCCESS)
+    {
+        Serial.println("Delivery Success");
+        Serial.print("Button: ");
+        Serial.println(packet_send.is_button_down);
+        Serial.print("Pump Mode: ");
+        Serial.println(packet_send.pump_mode);
+        Serial.print("Limit: ");
+        Serial.println(packet_send.pump_limit);
+        Serial.print("Interval: ");
+        Serial.println(packet_send.pump_interval);
+        Serial.println();
+    }
+    else
+    {
+        Serial.println("Delivery Fail");
+    }
 }
 
 void OnDataRecv(const uint8_t *mac, const uint8_t *incomingData, int len)
@@ -103,92 +82,40 @@ void OnDataRecv(const uint8_t *mac, const uint8_t *incomingData, int len)
     // Get incoming data
     memcpy(&packet_receive, incomingData, sizeof(packet_receive));
 
-    Serial.print("Data received: ");
-    Serial.println(len);
-    Serial.print("Temperature Value: ");
-    Serial.println(packet_receive.temp);
-    Serial.print("Humidity Value: ");
-    Serial.println(packet_receive.humid);
-    Serial.print("Moisture Value: ");
-    Serial.println(packet_receive.moisture_val);
-    Serial.print("Moisture Percentage: ");
-    Serial.println(packet_receive.moisture_pct);
-    Serial.print("Pump Status: ");
-    Serial.println(packet_receive.is_pump_on);
-    Serial.print("Dry Status: ");
-    Serial.println(packet_receive.is_dry);
-    Serial.print("Night Status: ");
-    Serial.println(packet_receive.is_night);
-    Serial.println();
-
     is_packet_received = true;
 }
 
-bool isPacketSent(void)
+bool isPacketCannotSent()
 {
-    return is_packet_sent;
+    // if (cannot_sent)
+    // {
+    //     cannot_sent = false;
+    //     return true;
+    // }
+    return false;
 }
 
-bool isPacketReceived(void)
+bool isPacketReceived()
 {
     if (is_packet_received)
     {
         is_packet_received = false;
+
+        espFirebaseSync();
+
         return true;
     }
     return false;
 }
 
-void esp_nowRequestData()
+void esp_nowSync()
 {
-    packet_send.request_data = 1;
-    packet_send.turn_on_pump = 0;
-    packet_send.pump_mode_order = current_pump_mode;
+    packet_send.pump_mode = current_pump_mode;
 
     esp_now_send(broadcastAddress, (uint8_t *)&packet_send, sizeof(packet_send));
-}
-void esp_nowTurnOnPump()
-{
-    packet_send.request_data = 0;
-    packet_send.turn_on_pump = 1;
-    packet_send.pump_mode_order = current_pump_mode;
 
-    esp_now_send(broadcastAddress, (uint8_t *)&packet_send, sizeof(packet_send));
-}
-void esp_nowSendPumpMode()
-{
-    packet_send.request_data = 0;
-    packet_send.turn_on_pump = 0;
-    packet_send.pump_mode_order = current_pump_mode;
-
-    esp_now_send(broadcastAddress, (uint8_t *)&packet_send, sizeof(packet_send));
+    last_request_time = current_time;
+    return;
 }
 
-float getTemperature()
-{
-    return packet_receive.temp;
-}
-float getHumidity()
-{
-    return packet_receive.humid;
-}
-int getMoistureValue()
-{
-    return packet_receive.moisture_val;
-}
-int getMoisturePercentage()
-{
-    return packet_receive.moisture_pct;
-}
-int getPumpStatus()
-{
-    return packet_receive.is_pump_on;
-}
-int getDryStatus()
-{
-    return packet_receive.is_dry;
-}
-int getNightStatus()
-{
-    return packet_receive.is_night;
-}
+#endif /* ESP_NOWSERVER */

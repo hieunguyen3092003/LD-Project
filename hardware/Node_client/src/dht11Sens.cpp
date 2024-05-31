@@ -1,12 +1,7 @@
-/*
- * dht11Sens.cpp
- *
- *  Created on: feb 5, 2023
- *      Author: hieun
- */
-
 #include "global.h"
 #include "dht11Sens.h"
+
+#ifdef DHT11SENS
 
 #include <DHT_U.h>
 #include <SPI.h>
@@ -16,14 +11,14 @@ void initDHT11Sens(void);
 float dhtTempValue(void);
 float dhtHumidValue(void);
 
-DHT dht(DHT11_Sensor_Pin, DHT11);
+DHT dht(DHT11_SENSOR_PIN, DHT11);
 
 float temperature = 0;
 float humidity = 0;
 
 void initDHT11Sens()
 {
-    pinMode(DHT11_Sensor_Pin, INPUT_PULLDOWN);
+    pinMode(DHT11_SENSOR_PIN, INPUT_PULLDOWN);
     dht.begin();
 }
 
@@ -38,3 +33,5 @@ float dhtHumidValue()
     humidity = dht.readHumidity();
     return humidity;
 }
+
+#endif /* DHT11SENS */

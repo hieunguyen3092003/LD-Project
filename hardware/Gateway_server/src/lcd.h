@@ -1,19 +1,11 @@
-/*
- * lcd.h
- *
- *  Created on: feb 5, 2023
- *      Author: hieun
- */
+#include "cfg.h"
 
-#ifndef SRC_LCD_H
-#define SRC_LCD_H
-
-#include "global.h"
+#ifdef LCD
 
 void initLCD(void);
 void lcdTurnOnBacklight(void);
 void lcdTurnOffBacklight(void);
 void lcdClear(void);
-void lcdDisplay(const int &x_coor, const int &y_coor, const String &msg, const int &number, const String &units);
+void lcdDisplay(const int &x_coor, const int &y_coor, const String &msg, const int &number, const String &units, bool fill_num);
 
-#endif /* SRC_LCD_H */
+#endif /* LCD */
